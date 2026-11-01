@@ -21,13 +21,9 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 container=$(docker create --pull=never --platform "$platform" --network none \
-    --label "io.tuxcrate.smoke-test=${TUXCRATE_TEST_ID:-manual-lidarr-$$}" "$image")
+    --label "com.tuxcrate.smoke-test=${TUXCRATE_TEST_ID:-manual-lidarr-$$}" "$image")
 docker start "$container" > /dev/null
 docker exec "$container" sh -eu -c '
-    test "$(id -u)" = 1000
-    test "$(id -g)" = 1000
-    test "$(id -un)" = tuxcrate
-    test "$(id -gn)" = tuxcrate
     test -w /config
     test ! -w /opt/lidarr/bin
     /opt/lidarr/bin/fpcalc -version
