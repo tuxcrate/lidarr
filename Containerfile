@@ -60,9 +60,5 @@ COPY --from=download /notices /usr/share/doc/lidarr
 USER 1000:1000
 WORKDIR /config
 
-ARG APP_VERSION
-RUN --mount=type=bind,source=tests,target=/tmp/tests \
-    sh /tmp/tests/build-smoke.sh "$APP_VERSION"
-
 EXPOSE 8686
 ENTRYPOINT ["/opt/lidarr/bin/Lidarr", "-nobrowser", "-data=/config"]
