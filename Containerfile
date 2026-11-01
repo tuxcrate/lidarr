@@ -8,13 +8,13 @@ ARG TARGETARCH
 RUN --mount=type=secret,id=github_token \
     set -eu; \
     : "${APP_VERSION:?APP_VERSION must be set}"; \
-    set --; \
+    github_auth=""; \
     if [ -s /run/secrets/github_token ]; then \
-        set -- --header "Authorization: Bearer $(cat /run/secrets/github_token)"; \
+        github_auth="Authorization: Bearer $(cat /run/secrets/github_token)"; \
     fi; \
     apk add --no-cache ca-certificates curl jq; \
     case "$TARGETARCH" in amd64) arch=x64 ;; arm64) arch=arm64 ;; *) exit 1 ;; esac; \
-    curl "$@" --fail --location --retry 3 \
+    curl --header "$github_auth" --fail --location --retry 3 \
         "https://api.github.com/repos/Lidarr/Lidarr/releases/tags/v${APP_VERSION}" -o /tmp/release.json; \
     jq -e --arg tag "v${APP_VERSION}" \
         '.tag_name == $tag and .draft == false and (.prerelease | type == "boolean")' /tmp/release.json; \
