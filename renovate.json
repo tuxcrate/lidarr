@@ -21,7 +21,7 @@
       "overrideDatasource": "custom.github-prereleases",
       "ignoreUnstable": false,
       "respectLatest": false,
-      "prBodyNotes": ["The prerelease track requires an upstream GitHub prerelease with Lidarr.develop assets. Builds reject stable releases and verify both architectures before publication."]
+      "prBodyNotes": ["The prerelease track discovers only upstream GitHub prereleases. Builds derive the branch from the upstream prerelease flag, require matching Lidarr.develop assets for prereleases, and verify both architectures before publication."]
     }
   ]
 }

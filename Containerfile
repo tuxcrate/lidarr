@@ -3,13 +3,11 @@ FROM ${BASE_IMAGE} AS download
 
 ARG APP_VERSION
 ARG PACKAGE_VERSION
-ARG RELEASE_BRANCH
 ARG TARGETARCH
 
 RUN --mount=type=secret,id=github_token \
     set -eu; \
     : "${APP_VERSION:?APP_VERSION must be set}"; \
-    case "$RELEASE_BRANCH" in master) prerelease=false ;; develop) prerelease=true ;; *) exit 1 ;; esac; \
     set --; \
     if [ -s /run/secrets/github_token ]; then \
         set -- --header "Authorization: Bearer $(cat /run/secrets/github_token)"; \
@@ -18,9 +16,10 @@ RUN --mount=type=secret,id=github_token \
     case "$TARGETARCH" in amd64) arch=x64 ;; arm64) arch=arm64 ;; *) exit 1 ;; esac; \
     curl "$@" --fail --location --retry 3 \
         "https://api.github.com/repos/Lidarr/Lidarr/releases/tags/v${APP_VERSION}" -o /tmp/release.json; \
-    jq -e --arg tag "v${APP_VERSION}" --argjson prerelease "$prerelease" \
-        '.tag_name == $tag and .draft == false and .prerelease == $prerelease' /tmp/release.json; \
-    jq -ce --arg name "Lidarr.${RELEASE_BRANCH}.${APP_VERSION}.linux-musl-core-${arch}.tar.gz" \
+    jq -e --arg tag "v${APP_VERSION}" \
+        '.tag_name == $tag and .draft == false and (.prerelease | type == "boolean")' /tmp/release.json; \
+    branch="$(jq -er 'if .prerelease then "develop" else "master" end' /tmp/release.json)"; \
+    jq -ce --arg name "Lidarr.${branch}.${APP_VERSION}.linux-musl-core-${arch}.tar.gz" \
         '[.assets[] | select(.name == $name)] \
          | if length == 1 then .[0] else error("expected exactly one matching Lidarr asset") end' \
         /tmp/release.json > /tmp/asset.json; \
@@ -37,7 +36,7 @@ RUN --mount=type=secret,id=github_token \
     printf 'Lidarr is licensed under GPL-3.0.\nCorresponding source: https://github.com/Lidarr/Lidarr/tree/v%s\nSource archive: https://github.com/Lidarr/Lidarr/archive/refs/tags/v%s.tar.gz\n' \
         "$APP_VERSION" "$APP_VERSION" > /notices/SOURCE; \
     printf 'UpdateMethod=docker\nBranch=%s\nPackageVersion=%s\nPackageAuthor=[Tuxcrate](https://tuxcrate.com)\n' \
-        "$RELEASE_BRANCH" "${PACKAGE_VERSION:-${APP_VERSION}-local}" > /package_info
+        "$branch" "${PACKAGE_VERSION:-${APP_VERSION}-local}" > /package_info
 
 FROM ${BASE_IMAGE}
 
