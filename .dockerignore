@@ -5,3 +5,4 @@ README.md
 LICENSE
 renovate.json
 meta.yaml
+tests/smoke.sh

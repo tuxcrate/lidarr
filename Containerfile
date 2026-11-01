@@ -62,7 +62,7 @@ WORKDIR /config
 
 ARG APP_VERSION
 RUN --mount=type=bind,source=tests,target=/tmp/tests \
-    sh /tmp/tests/smoke.sh "$APP_VERSION"
+    sh /tmp/tests/build-smoke.sh "$APP_VERSION"
 
 EXPOSE 8686
 ENTRYPOINT ["/opt/lidarr/bin/Lidarr", "-nobrowser", "-data=/config"]
