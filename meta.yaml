@@ -16,7 +16,7 @@ tracks:
     upstream:
       datasource: github-releases
       depName: Lidarr/Lidarr
-      version: "3.2.0.5144"
+      version: "3.2.1.5196"
     prerelease: true
     tags:
       - "${version}-prerelease"
